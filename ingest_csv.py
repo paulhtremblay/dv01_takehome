@@ -29,6 +29,11 @@ def _get_args()-> object:
     parser.add_argument( '--table-name', 
             required = True,
         help='name of table')
+    parser.add_argument( '--demo', 
+            action = 'store_true',
+        help='run demo')
+    parser.add_argument( '--out_path', '-o', 
+        help='output for demo')
     known_args, pipeline_args = parser.parse_known_args()
     return known_args, pipeline_args
 
@@ -71,17 +76,27 @@ def run(pipeline_args:list=None):
     in_path = f'{known_args.path}/*'
     table_schema = 'total_issued:INTEGER, current:INTEGER, late:FLOAT, charged:INTEGER, principal_payments_received:FLOAT, interest_payments_received:FLOAT, avg_interest:FLOAT' 
 
-    with Pipeline(options=pipeline_options) as pipeline:
-        clean_csv = pipeline | 'Read input file' >> beam.io.textio.ReadFromText(
-                in_path, skip_header_lines = 2, ) \
-        | 'Convert CSV to list' >> ParDo(ToCsv()) \
-        | 'Filter fields' >> ParDo(FilterFields()) \
-        | "to dict " >> ParDo(ToDict(schema = table_schema)) \
-        | " To BQ" >> beam.io.WriteToBigQuery(
-                        known_args.table_name,
-                        schema=table_schema,
-                        write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
-                        create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED)
+    out_path = f'{known_args.out_path}/'
+    if known_args.demo:
+        with Pipeline(options=pipeline_options) as pipeline:
+            clean_csv = pipeline | 'Read input file' >> beam.io.textio.ReadFromText(
+                    in_path, skip_header_lines = 2, ) \
+            | 'Convert CSV to list' >> ParDo(ToCsv()) \
+            | 'Filter fields' >> ParDo(FilterFields()) \
+            | "to dict " >> ParDo(ToDict(schema = table_schema)) \
+            | 'to local file' >> beam.io.WriteToText(out_path)
+    else:
+        with Pipeline(options=pipeline_options) as pipeline:
+            clean_csv = pipeline | 'Read input file' >> beam.io.textio.ReadFromText(
+                    in_path, skip_header_lines = 2, ) \
+            | 'Convert CSV to list' >> ParDo(ToCsv()) \
+            | 'Filter fields' >> ParDo(FilterFields()) \
+            | "to dict " >> ParDo(ToDict(schema = table_schema)) \
+            | " To BQ" >> beam.io.WriteToBigQuery(
+                            known_args.table_name,
+                            schema=table_schema,
+                            write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
+                            create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED)
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
