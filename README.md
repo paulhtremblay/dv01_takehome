@@ -22,3 +22,5 @@ to a bucket, and access them through <bucket/folder/*> So that thousands of file
 be ingested if needed
 
 Spent 30 minutes trying to figure out which fields to use. Made my best estimate. Could not find fully_paid field
+
+Please see the pics dirctory to see my the bucket, bq tables, etc.
