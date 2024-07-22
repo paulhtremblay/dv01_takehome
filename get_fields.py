@@ -4,7 +4,18 @@ s = """"id","member_id","loan_amnt","funded_amnt","funded_amnt_inv","term","int_
 
 for line in csv.reader([s], quotechar='"', delimiter=',', quoting=csv.QUOTE_ALL):
     for count, j in enumerate(line):
+        par = ' '.join(j.split('_'))
+        if 'ful' in j:
+            print(count, j)
         print(count, j)
 
+#42 total received principal
+#7 interest rate
+#43 interest
+#44 late fee
+#72 current
+#82 chared
+#62 curr
 for line in csv.reader([s], quotechar='"', delimiter=',', quoting=csv.QUOTE_ALL):
-    print(line[2])
+    print(line[2], line[7], line[42], line[62], line[79], line[82])
+
