@@ -11,6 +11,10 @@ def read_the_csv(s:str) -> list:
     """
     assert isinstance(s, str)
     for line in csv.reader([s], quotechar='"', delimiter=',', quoting=csv.QUOTE_ALL):
+        if len(line) == 0 or len(line) == 1:
+            continue
+        if len(line) != 150:
+            print(f'line is {line}')
         assert len(line) == 150
         final = []
         for i in line:
@@ -18,7 +22,10 @@ def read_the_csv(s:str) -> list:
             if i == '':
                 final.append(None)
             elif '%' in i:
-                final.append(float(i.replace('%', '').strip()))
+                try:
+                    final.append(float(i.replace('%', '').strip()))
+                except ValueError:
+                    final.append(i)
             else:
                 try:
                     final.append(int(i))

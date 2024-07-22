@@ -26,6 +26,9 @@ def _get_args()-> object:
             default = None,
             required = True,
         help='path to bucket or directory')
+    parser.add_argument( '--table-name', 
+            required = True,
+        help='name of table')
     known_args, pipeline_args = parser.parse_known_args()
     return known_args, pipeline_args
 
@@ -74,7 +77,11 @@ def run(pipeline_args:list=None):
         | 'Convert CSV to list' >> ParDo(ToCsv()) \
         | 'Filter fields' >> ParDo(FilterFields()) \
         | "to dict " >> ParDo(ToDict(schema = table_schema)) \
-        | "print" >> beam.Map(print)
+        | " To BQ" >> beam.io.WriteToBigQuery(
+                        known_args.table_name,
+                        schema=table_schema,
+                        write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
+                        create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED)
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
